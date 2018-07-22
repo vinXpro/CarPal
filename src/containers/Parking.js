@@ -1,17 +1,21 @@
 import React from 'react';
-import { Image, Dimensions, StyleSheet } from 'react-native';
+import { Image, Dimensions, InteractionManager, StyleSheet } from 'react-native';
 import MapView from 'react-native-maps';
 
 import parkingAddress from '../assets/parking_address';
-import MapMarker from './MapMarker';
+import MapMarker from '../components/MapMarker';
 
 const { width, height } = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.00922;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
-class Map extends React.PureComponent {
+class Parking extends React.PureComponent {
+    static navigationOptions = ({
+        title: 'Car Parking'
+    })
     state = {
+        isLoading: true,
         region: {
             latitude: 1.2655144,
             longitude: 103.8200451,
@@ -20,6 +24,12 @@ class Map extends React.PureComponent {
             latitude: 1.2655144,
             longitude: 103.8200451,
         }
+    }
+
+    componentWillMount() {
+        InteractionManager.runAfterInteractions(() => {
+            this.setState({ isLoading: false })
+        });
     }
 
     onUserLocationChange = e => {
@@ -32,7 +42,8 @@ class Map extends React.PureComponent {
     }
 
     render() {
-        const { region, myLocation } = this.state;
+        const { isLoading, region, myLocation } = this.state;
+        if (isLoading) return null;
         return (
             <MapView
                 style={styles.container}
@@ -52,13 +63,13 @@ class Map extends React.PureComponent {
                 <MapView.Marker
                     title={'My Location'}
                     description={''}
-                    coordinate={myLocation}
+                    coordinate={region}
                     anchor={{ x: 0.5, y: 0.5 }}
                 >
                     <Image source={require('../assets/images/car.png')} style={{ width: 40, height: 40, resizeMode: 'stretch' }} />
                 </MapView.Marker>
                 {
-                    parkingAddress.map(i => <MapMarker {...i} />)
+                    parkingAddress.map((i, index) => <MapMarker key={index} {...i} />)
                 }
             </MapView>
         );
@@ -71,4 +82,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Map;
+export default Parking;
